@@ -15,10 +15,9 @@
  */
 package io.knotx.fragments.handler.action;
 
-import java.util.Objects;
-
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import java.util.Objects;
 import java.util.Optional;
 
 @DataObject(generateConverter = true)
@@ -28,14 +27,24 @@ public class ActionOptions {
   private JsonObject config;
   private String doAction;
 
+  private ActionOptions() {
+  }
+
+  ActionOptions(String factory) {
+    this(factory, null, null);
+  }
+
   ActionOptions(String factory, JsonObject config) {
     this(factory, config, null);
   }
 
   ActionOptions(String factory, JsonObject config, String doAction) {
-    this.factory = factory;
-    this.config = config;
-    this.doAction = doAction;
+    ActionOptions actionOptions = new ActionOptions().setFactory(factory).setConfig(config)
+        .setDoAction(doAction);
+
+    JsonObject json = new JsonObject();
+    ActionOptionsConverter.toJson(actionOptions, json);
+    ActionOptionsConverter.fromJson(json, this);
   }
 
   public ActionOptions(JsonObject json) {

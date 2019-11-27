@@ -125,16 +125,14 @@ class ActionProviderTest {
 
   @Test
   @DisplayName("Expect action when action config not defined.")
-  void getOperationWithNoActionConfig(Vertx vertx) {
+  void expectActionWhenNoActionConfig(Vertx vertx) {
     // given
-    Map<String, ActionOptions> proxies = Collections
-        .singletonMap(PROXY_ALIAS,
-            new ActionOptions(PROXY_FACTORY_NAME, null, null));
-    List<ActionFactory> factories = Collections
-        .singletonList(new TestCacheableOperationFactory());
+    Map<String, ActionOptions> actionOptions = Collections.singletonMap(PROXY_ALIAS,
+        new ActionOptions(PROXY_FACTORY_NAME));
 
-    ActionProvider tested = new ActionProvider(proxies,
-        factories::iterator, "error", vertx);
+    ActionProvider tested = new ActionProvider(actionOptions,
+        Collections.<ActionFactory>singletonList(new TestCacheableOperationFactory())::iterator,
+        "error", vertx);
 
     // when
     Optional<Action> operation = tested.get(PROXY_ALIAS);
