@@ -34,6 +34,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class CircuitBreakerAction implements Action {
@@ -44,13 +47,15 @@ class CircuitBreakerAction implements Action {
   private final Action doAction;
   private final ActionLogLevel actionLogLevel;
   private final String alias;
+  private final Set<String> errorTransitions;
 
   CircuitBreakerAction(CircuitBreaker circuitBreaker, Action doAction, String alias,
-      ActionLogLevel actionLogLevel) {
+      ActionLogLevel actionLogLevel, Set<String> errorTransitions) {
     this.circuitBreaker = circuitBreaker;
     this.doAction = doAction;
     this.alias = alias;
     this.actionLogLevel = actionLogLevel;
+    this.errorTransitions = Optional.ofNullable(errorTransitions).orElse(Collections.emptySet());
   }
 
   @Override
@@ -96,7 +101,9 @@ class CircuitBreakerAction implements Action {
   }
 
   private boolean isErrorTransition(FragmentResult result) {
-    return ERROR_TRANSITION.equals(result.getTransition());
+    return
+        errorTransitions.stream().anyMatch(transition -> transition.equals(result.getTransition()))
+            || ERROR_TRANSITION.equals(result.getTransition());
   }
 
   private static void handleFail(Promise<FragmentResult> promise, JsonObject nodeLog,

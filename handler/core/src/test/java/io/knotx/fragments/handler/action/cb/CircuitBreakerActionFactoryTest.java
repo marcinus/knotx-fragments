@@ -600,7 +600,7 @@ class CircuitBreakerActionFactoryTest {
     CircuitBreakerAction tested = new CircuitBreakerAction(circuitBreaker,
         CircuitBreakerDoActions
             .applyOneAfterAnother(firstInvocationBehaviour, secondInvocationBehaviour), "tested",
-        INFO);
+        INFO, null);
 
     // when
     tested.apply(new FragmentContext(FRAGMENT, new ClientRequest()), handler);

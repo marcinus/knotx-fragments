@@ -20,6 +20,7 @@ import static io.knotx.fragments.handler.api.actionlog.ActionLogLevel.ERROR;
 import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,6 +38,8 @@ public class CircuitBreakerActionFactoryOptions {
   private String circuitBreakerName;
 
   private CircuitBreakerOptions circuitBreakerOptions = DEFAULT_CIRCUIT_BREAKER_OPTIONS;
+
+  private Set<String> errorTransitions;
 
   private String logLevel = ERROR.getLevel();
 
@@ -109,6 +112,22 @@ public class CircuitBreakerActionFactoryOptions {
   public CircuitBreakerActionFactoryOptions setCircuitBreakerOptions(
       CircuitBreakerOptions circuitBreakerOptions) {
     this.circuitBreakerOptions = circuitBreakerOptions;
+    return this;
+  }
+
+  /**
+   * @return transitions that mean error
+   */
+  public Set<String> getErrorTransitions() {
+    return errorTransitions;
+  }
+
+  /**
+   * @param errorTransitions transitions that mean error
+   * @return the current {@link CircuitBreakerActionFactoryOptions} instance
+   */
+  public CircuitBreakerActionFactoryOptions setErrorTransitions(Set<String> errorTransitions) {
+    this.errorTransitions = errorTransitions;
     return this;
   }
 
