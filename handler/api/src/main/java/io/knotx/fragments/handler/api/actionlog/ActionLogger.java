@@ -17,6 +17,7 @@ package io.knotx.fragments.handler.api.actionlog;
 
 import static io.knotx.fragments.handler.api.actionlog.ActionLogLevel.INFO;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.time.Instant;
 import java.util.function.Function;
@@ -35,59 +36,50 @@ public class ActionLogger {
     return new ActionLogger(alias, actionLogLevel);
   }
 
-  public static ActionLogger create(String alias, String actionLogLevel) {
-    ActionLogLevel logLevel = ActionLogLevel.fromConfig(actionLogLevel);
-    return new ActionLogger(alias, logLevel);
+  public static ActionLogger create(String alias, String logLevel) {
+    return new ActionLogger(alias, ActionLogLevel.fromConfig(logLevel));
   }
 
-  public void info(String key, Object data) {
+  public void info(String key, String value) {
     if (actionLogLevel == INFO) {
-      if(data instanceof String){
-        builder.addLog(key, String.valueOf(data));
-        return;
-      }
-      this.builder.addLog(key, JsonObject.mapFrom(data));
+      this.builder.addLog(key, value);
     }
   }
 
-  public void info(String key, JsonObject data) {
+  public void info(String key, JsonObject value) {
     if (actionLogLevel == INFO) {
-      this.builder.addLog(key, data);
+      this.builder.addLog(key, value);
     }
   }
 
-  public <T> void info(String key, T data, Function<T, JsonObject> toJsonFunc) {
+  public void info(String key, JsonArray value) {
     if (actionLogLevel == INFO) {
-      this.builder.addLog(key, toJsonFunc.apply(data));
+      this.builder.addLog(key, value);
     }
   }
 
-  public void info(String key, String data) {
+  public <T> void info(String key, T value, Function<T, JsonObject> toJsonFunc) {
     if (actionLogLevel == INFO) {
-      this.builder.addLog(key, data);
+      this.builder.addLog(key, toJsonFunc.apply(value));
     }
   }
 
-  public void doActionLog(long duration, JsonObject actionLog) {
-    if (actionLogLevel == INFO) {
-      this.builder.appendInvocationLogEntry(duration, toActionLogOrNull(actionLog));
-    }
+  public void error(String key, String value) {
+    this.builder.addLog(key, value);
   }
 
-  private ActionLog toActionLogOrNull(JsonObject jsonObject){
-    return jsonObject != null ? new ActionLog(jsonObject) : null;
+  public void error(String key, JsonArray value) {
+    this.builder.addLog(key, value);
   }
 
-  public void failureDoActionLog(long duration, JsonObject actionLog) {
-    this.builder.appendFailureInvocationLogEntry(duration, toActionLogOrNull(actionLog));
+  public void error(String key, JsonObject value) {
+    this.builder.addLog(key, value);
   }
 
-  public void error(String key, JsonObject data) {
-    this.builder.addLog(key, data);
-  }
-
-  public void error(String key, String data) {
-    this.builder.addLog(key, data);
+  public void error(Throwable throwable) {
+    this.builder.addLog("_error",
+        new JsonObject().put("className", throwable.getClass().getCanonicalName())
+            .put("message", throwable.getMessage()));
   }
 
   public void error(String data) {
@@ -100,5 +92,19 @@ public class ActionLogger {
 
   public ActionLog toLog() {
     return builder.build();
+  }
+
+  public void doActionLog(long duration, JsonObject actionLog) {
+    if (actionLogLevel == INFO) {
+      this.builder.appendInvocationLogEntry(duration, toActionLogOrNull(actionLog));
+    }
+  }
+
+  public void failureDoActionLog(long duration, JsonObject actionLog) {
+    this.builder.appendFailureInvocationLogEntry(duration, toActionLogOrNull(actionLog));
+  }
+
+  private ActionLog toActionLogOrNull(JsonObject jsonObject) {
+    return jsonObject != null ? new ActionLog(jsonObject) : null;
   }
 }
